@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './App.css';
 import Formulario from './components/Formulario';
 import JugadorItem from './components/JugadorItem';
 
@@ -7,6 +8,7 @@ function App() {
   const [busqueda, setBusqueda] = useState('');
   const [error, setError] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const [jugadorEnEdicion, setJugadorEnEdicion] = useState(null);
 
   // Cargar datos (GET) - [cite: 40, 69]
   useEffect(() => {
@@ -37,46 +39,87 @@ function App() {
     .then(() => setJugadores(jugadores.filter(j => j.id !== id)));
   };
 
+  const iniciarEdicion = (jugador) => {
+    setJugadorEnEdicion(jugador);
+  };
+
+  const guardarEdicion = (datosActualizados) => {
+    fetch(`http://localhost:5000/jugadores/${jugadorEnEdicion.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(datosActualizados)
+    })
+      .then(async res => {
+        if (!res.ok) {
+          const errorBody = await res.json().catch(() => ({}));
+          throw new Error(errorBody.error || 'No se pudo actualizar el jugador');
+        }
+        return res.json();
+      })
+      .then(data => {
+        setJugadores(
+          jugadores.map(j => (j.id === jugadorEnEdicion.id ? { ...j, ...data } : j))
+        );
+        setJugadorEnEdicion(null);
+      })
+      .catch(err => {
+        alert(err.message);
+      });
+  };
+
+  const cancelarEdicion = () => {
+    setJugadorEnEdicion(null);
+  };
+
   // Lógica de Filtro - [cite: 59, 66]
   const filtrados = jugadores.filter(j => 
     j.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   return (
-    <div style={styles.app}>
-      <header style={styles.header}>
-        <img src="/logo-boca.png" alt="Boca" style={{width: '80px'}} />
-        <h1 style={{color: '#FFB81C'}}>MUNDO BOCA - GESTIÓN</h1>
+    <main className="page">
+      <div className="bg-shape bg-shape-left" />
+      <div className="bg-shape bg-shape-right" />
+
+      <header className="hero">
+        <img src="/logo-boca.png" alt="Boca" className="hero-logo" />
+        <div>
+          <p className="hero-kicker">Plantel Profesional</p>
+          <h1 className="hero-title">Mundo Boca Gestion</h1>
+        </div>
+        <div className="hero-pill">{jugadores.length} jugadores</div>
       </header>
 
-      <div style={styles.filtroContainer}>
-        <input 
-          placeholder="Buscar jugador..." 
-          onChange={(e) => setBusqueda(e.target.value)} 
-          style={styles.busqueda}
+      <section className="toolbar">
+        <input
+          placeholder="Buscar jugador por nombre..."
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="search-input"
         />
-      </div>
+      </section>
 
-      <Formulario alAgregar={agregarJugador} />
+      <Formulario
+        alAgregar={agregarJugador}
+        alGuardarEdicion={guardarEdicion}
+        jugadorEnEdicion={jugadorEnEdicion}
+        alCancelarEdicion={cancelarEdicion}
+      />
 
-      {cargando && <p>Cargando el plantel...</p>}
-      {error && <p style={{color: 'red'}}>{error}</p>}
+      {cargando && <p className="status-text">Cargando el plantel...</p>}
+      {error && <p className="status-text error-text">{error}</p>}
 
-      <div style={styles.grid}>
+      <section className="players-grid">
         {filtrados.map(j => (
-          <JugadorItem key={j.id} jugador={j} alBorrar={eliminarJugador} />
+          <JugadorItem
+            key={j.id}
+            jugador={j}
+            alBorrar={eliminarJugador}
+            alEditar={iniciarEdicion}
+          />
         ))}
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
-
-const styles = {
-  app: { backgroundColor: '#003594', minHeight: '100vh', padding: '20px', fontFamily: 'Arial, sans-serif' },
-  header: { textAlign: 'center', marginBottom: '30px' },
-  filtroContainer: { textAlign: 'center', marginBottom: '20px' },
-  busqueda: { padding: '10px', width: '300px', borderRadius: '20px', border: '2px solid #FFB81C' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }
-};
 
 export default App;

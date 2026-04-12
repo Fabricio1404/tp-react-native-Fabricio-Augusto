@@ -17,6 +17,13 @@ const Jugador = {
         );
         return result.insertId;
     },
+    update: async (id, data) => {
+        const { nombre, posicion, dorsal } = data;
+        await db.query(
+            'UPDATE jugadores SET nombre = ?, posicion = ?, dorsal = ? WHERE id = ?',
+            [nombre, posicion, dorsal, id]
+        );
+    },
     delete: async (id) => {
         await db.query('DELETE FROM jugadores WHERE id = ?', [id]);
     }
