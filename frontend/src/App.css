@@ -154,6 +154,20 @@ body {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.player-select {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fbff;
+}
+
+.player-select option {
+  color: #102a54;
+  background: #ffffff;
+}
+
+.player-select:invalid {
+  color: rgba(234, 241, 255, 0.75);
+}
+
 .player-input::placeholder {
   color: rgba(234, 241, 255, 0.75);
 }

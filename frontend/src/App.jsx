@@ -10,7 +10,6 @@ function App() {
   const [cargando, setCargando] = useState(true);
   const [jugadorEnEdicion, setJugadorEnEdicion] = useState(null);
 
-  // Cargar datos (GET) - [cite: 40, 69]
   useEffect(() => {
     fetch('http://localhost:5000/jugadores')
       .then(res => res.json())
@@ -19,24 +18,25 @@ function App() {
         setCargando(false);
       })
       .catch(() => {
-        setError("Error al conectar con la Bombonera (Servidor)");
+        setError('Error al conectar con la Bombonera (Servidor)');
         setCargando(false);
       });
   }, []);
 
+  
   const agregarJugador = (nuevo) => {
     fetch('http://localhost:5000/jugadores', {
-      method: 'POST', // [cite: 42]
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(nuevo)
     })
-    .then(res => res.json())
-    .then(data => setJugadores([...jugadores, data]));
+      .then(res => res.json())
+      .then(data => setJugadores([...jugadores, data]));
   };
 
   const eliminarJugador = (id) => {
-    fetch(`http://localhost:5000/jugadores/${id}`, { method: 'DELETE' }) // [cite: 44]
-    .then(() => setJugadores(jugadores.filter(j => j.id !== id)));
+    fetch(`http://localhost:5000/jugadores/${id}`, { method: 'DELETE' })
+      .then(() => setJugadores(jugadores.filter(j => j.id !== id)));
   };
 
   const iniciarEdicion = (jugador) => {
@@ -71,8 +71,7 @@ function App() {
     setJugadorEnEdicion(null);
   };
 
-  // Lógica de Filtro - [cite: 59, 66]
-  const filtrados = jugadores.filter(j => 
+  const filtrados = jugadores.filter(j =>
     j.nombre.toLowerCase().includes(busqueda.toLowerCase())
   );
 

@@ -20,13 +20,13 @@ const Formulario = ({ alAgregar, alGuardarEdicion, jugadorEnEdicion, alCancelarE
 
   const enviar = (e) => {
     e.preventDefault();
-    if (!datos.nombre || !datos.posicion) return alert("Completá los campos obligatorios");
+    if (!datos.nombre || !datos.posicion) return alert('Completá los campos obligatorios');
     if (jugadorEnEdicion) {
       alGuardarEdicion(datos);
     } else {
       alAgregar(datos);
     }
-    setDatos({ nombre: '', posicion: '', dorsal: '' }); // Limpiar
+    setDatos({ nombre: '', posicion: '', dorsal: '' });
   };
 
   return (
@@ -40,7 +40,7 @@ const Formulario = ({ alAgregar, alGuardarEdicion, jugadorEnEdicion, alCancelarE
       <select
         value={datos.posicion}
         onChange={e => setDatos({...datos, posicion: e.target.value})}
-        className="player-input"
+        className="player-input player-select"
       >
         <option value="">Seleccionar posición</option>
         {POSICIONES.map((posicion) => (
