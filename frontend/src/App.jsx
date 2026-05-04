@@ -1,75 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import Formulario from './components/Formulario';
 import JugadorItem from './components/JugadorItem';
+import { useJugadores } from './context/JugadoresContext';
 
 function App() {
-  const [jugadores, setJugadores] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [error, setError] = useState(null);
-  const [cargando, setCargando] = useState(true);
-  const [jugadorEnEdicion, setJugadorEnEdicion] = useState(null);
-
-  useEffect(() => {
-    fetch('http://localhost:5000/jugadores')
-      .then(res => res.json())
-      .then(data => {
-        setJugadores(data);
-        setCargando(false);
-      })
-      .catch(() => {
-        setError('Error al conectar con la Bombonera (Servidor)');
-        setCargando(false);
-      });
-  }, []);
+  const { jugadores, cargando, error, iniciarEdicion } = useJugadores();
 
   
-  const agregarJugador = (nuevo) => {
-    fetch('http://localhost:5000/jugadores', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nuevo)
-    })
-      .then(res => res.json())
-      .then(data => setJugadores([...jugadores, data]));
-  };
-
-  const eliminarJugador = (id) => {
-    fetch(`http://localhost:5000/jugadores/${id}`, { method: 'DELETE' })
-      .then(() => setJugadores(jugadores.filter(j => j.id !== id)));
-  };
-
-  const iniciarEdicion = (jugador) => {
-    setJugadorEnEdicion(jugador);
-  };
-
-  const guardarEdicion = (datosActualizados) => {
-    fetch(`http://localhost:5000/jugadores/${jugadorEnEdicion.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datosActualizados)
-    })
-      .then(async res => {
-        if (!res.ok) {
-          const errorBody = await res.json().catch(() => ({}));
-          throw new Error(errorBody.error || 'No se pudo actualizar el jugador');
-        }
-        return res.json();
-      })
-      .then(data => {
-        setJugadores(
-          jugadores.map(j => (j.id === jugadorEnEdicion.id ? { ...j, ...data } : j))
-        );
-        setJugadorEnEdicion(null);
-      })
-      .catch(err => {
-        alert(err.message);
-      });
-  };
-
-  const cancelarEdicion = () => {
-    setJugadorEnEdicion(null);
-  };
+  // Las acciones CRUD se manejan desde el Context (useJugadores)
 
   const filtrados = jugadores.filter(j =>
     j.nombre.toLowerCase().includes(busqueda.toLowerCase())
@@ -97,24 +37,14 @@ function App() {
         />
       </section>
 
-      <Formulario
-        alAgregar={agregarJugador}
-        alGuardarEdicion={guardarEdicion}
-        jugadorEnEdicion={jugadorEnEdicion}
-        alCancelarEdicion={cancelarEdicion}
-      />
+        <Formulario />
 
       {cargando && <p className="status-text">Cargando el plantel...</p>}
       {error && <p className="status-text error-text">{error}</p>}
 
       <section className="players-grid">
         {filtrados.map(j => (
-          <JugadorItem
-            key={j.id}
-            jugador={j}
-            alBorrar={eliminarJugador}
-            alEditar={iniciarEdicion}
-          />
+          <JugadorItem key={j.id} jugador={j} />
         ))}
       </section>
     </main>

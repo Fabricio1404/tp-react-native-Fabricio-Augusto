@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useJugadores } from '../context/JugadoresContext';
 
 const POSICIONES = ['Arquero', 'Defensor', 'Mediocampista', 'Delantero'];
 
-const Formulario = ({ alAgregar, alGuardarEdicion, jugadorEnEdicion, alCancelarEdicion }) => {
+const Formulario = () => {
+  const { agregarJugador, guardarEdicion, jugadorEnEdicion, cancelarEdicion } = useJugadores();
   const [datos, setDatos] = useState({ nombre: '', posicion: '', dorsal: '' });
 
   useEffect(() => {
@@ -18,15 +20,19 @@ const Formulario = ({ alAgregar, alGuardarEdicion, jugadorEnEdicion, alCancelarE
     setDatos({ nombre: '', posicion: '', dorsal: '' });
   }, [jugadorEnEdicion]);
 
-  const enviar = (e) => {
+  const enviar = async (e) => {
     e.preventDefault();
     if (!datos.nombre || !datos.posicion) return alert('Completá los campos obligatorios');
-    if (jugadorEnEdicion) {
-      alGuardarEdicion(datos);
-    } else {
-      alAgregar(datos);
+    try {
+      if (jugadorEnEdicion) {
+        await guardarEdicion(datos);
+      } else {
+        await agregarJugador(datos);
+      }
+      setDatos({ nombre: '', posicion: '', dorsal: '' });
+    } catch (err) {
+      alert(err.message || 'Error al guardar');
     }
-    setDatos({ nombre: '', posicion: '', dorsal: '' });
   };
 
   return (
@@ -60,7 +66,7 @@ const Formulario = ({ alAgregar, alGuardarEdicion, jugadorEnEdicion, alCancelarE
         {jugadorEnEdicion ? 'GUARDAR CAMBIOS' : 'AGREGAR AL PLANTEL'}
       </button>
       {jugadorEnEdicion && (
-        <button type="button" className="btn-muted" onClick={alCancelarEdicion}>
+        <button type="button" className="btn-muted" onClick={cancelarEdicion}>
           CANCELAR
         </button>
       )}
